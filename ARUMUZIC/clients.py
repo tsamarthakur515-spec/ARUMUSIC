@@ -1,8 +1,8 @@
-# ARUMUZIC/clients.py
 from pyrogram import Client
 from pytgcalls import PyTgCalls
 import config
 
+# Bot Client
 bot = Client(
     "ARUMUSIC_BOT",
     api_id=config.API_ID,
@@ -11,6 +11,7 @@ bot = Client(
     plugins=dict(root="ARUMUZIC/plugins")
 )
 
+# Assistant Client
 assistant = Client(
     "ARUMUSIC_ASS",
     api_id=config.API_ID,
@@ -18,4 +19,5 @@ assistant = Client(
     session_string=config.SESSION_STRING
 )
 
+# Music Engine
 call = PyTgCalls(assistant)
