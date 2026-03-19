@@ -1,12 +1,11 @@
-# plugins/ping.py
 import time
 import psutil
 from datetime import datetime, timedelta
 from pyrogram import Client, filters
-from pyrogram.types import Message
-import config # Uptime check karne ke liye
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+import config # 👈 Isse BOT_START_TIME milega
 
-@bot.on_message(filters.command("ping"))
+@Client.on_message(filters.command("ping")) # 👈 @bot nahi, @Client
 async def ping_cmd(client, msg: Message):
     # 1. User ka command delete karo
     try:
@@ -16,13 +15,15 @@ async def ping_cmd(client, msg: Message):
 
     start_time = time.time()
     
-    # 2. 'Pinging...' message bhejo (client.send_message use karein)
+    # 2. 'Pinging...' message bhejo
     m = await client.send_message(msg.chat.id, "<code>ᴘɪɴɢɪɴɢ..</code>")
     
     # Latency & Stats logic
     end_time = time.time()
     latency = round((end_time - start_time) * 1000, 2)
-    uptime_sec = (datetime.now() - BOT_START_TIME).total_seconds()
+    
+    # config.BOT_START_TIME use karo
+    uptime_sec = (datetime.now() - config.BOT_START_TIME).total_seconds()
     uptime = str(timedelta(seconds=int(uptime_sec)))
     
     cpu = psutil.cpu_percent()
