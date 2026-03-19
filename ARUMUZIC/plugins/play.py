@@ -16,12 +16,17 @@ def fmt_time(seconds):
     return f"{hours:02}:{minutes:02}:{seconds:02}" if hours > 0 else f"{minutes:02}:{seconds:02}"
 
 def gen_btn_progressbar(total_sec, current_sec):
-    bar_length = 8 
+    bar_length = 10  # 10 blocks se loading bar ekdum professional dikhti hai
     if total_sec <= 0: total_sec = 1
+    
     percentage = min(100, max(0, (current_sec / total_sec) * 100))
     filled_blocks = int(percentage / (100 / bar_length))
-    bar = "__" * filled_blocks + "=" + "__" * (bar_length - filled_blocks)
+    
+    # Aapka naya sexy style implement kar diya:
+    bar = "▰" * filled_blocks + "▱" * (bar_length - filled_blocks)
+    
     return f"{fmt_time(current_sec)} {bar} {fmt_time(total_sec)}"
+
 
 # --- Timer Logic ---
 async def update_timer(chat_id, message_id, duration):
