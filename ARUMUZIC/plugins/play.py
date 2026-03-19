@@ -1,5 +1,4 @@
-#import asyncio
-import asyncio  # 👈 Iske aage se '#' hata diya, ab ye chalega!
+import asyncio 
 import aiohttp
 import time
 from urllib.parse import quote
@@ -12,9 +11,6 @@ from pytgcalls.types import AudioPiped, HighQualityAudio
 from ARUMUZIC.clients import bot, assistant, call 
 import config
 
-# --- BAAKI POORA CODE SAME RHEGA (NO CHANGES BELOW) ---
-
-
 # --- Utils (Timer functions) ---
 def fmt_time(seconds):
     minutes, seconds = divmod(seconds, 60)
@@ -24,18 +20,12 @@ def fmt_time(seconds):
     return f"{minutes:02}:{seconds:02}"
 
 def gen_btn_progressbar(total_sec, current_sec):
-    # Pehle bar_length 12-15 thi, ab 6-8 karke dekho
     bar_length = 8 
-    
     if total_sec == 0: total_sec = 1
     percentage = (current_sec / total_sec) * 100
     percentage = min(100, max(0, percentage))
-    
     filled_blocks = int(percentage / (100 / bar_length))
-    
-    # Dot wala style (Image match)
     bar = "▬" * filled_blocks + "●" + "▬" * (bar_length - filled_blocks)
-    
     return f"{fmt_time(current_sec)} {bar} {fmt_time(total_sec)}"
 
 #UPDATE TIMER
@@ -93,18 +83,26 @@ async def play_cmd(client, msg: Message):
     chat_id = msg.chat.id
     user_name = msg.from_user.first_name if msg.from_user else "User"
 
-    # 1. Admin/Assistant Check
+    # 1. Updated Assistant Ban & Auto-Join Check
     try:
         ast_info = await assistant.get_me()
+        ast_id = ast_info.id
+        ast_name = ast_info.first_name
+
         try:
-            ast_member = await client.get_chat_member(chat_id, ast_info.id)
+            ast_member = await client.get_chat_member(chat_id, ast_id)
             if ast_member.status == ChatMemberStatus.BANNED:
-                return await msg.reply("❌ Assistant is banned!")
-        except:
-            invitelink = await client.export_chat_invite_link(chat_id)
-            await assistant.join_chat(invitelink)
+                return await msg.reply(f"❌ **ᴀssɪsᴛᴀɴᴛ ɪs ʙᴀɴɴᴇᴅ!**\n\nᴘʟᴇᴀsᴇ ᴜɴʙᴀɴ ᴍʏ ᴀssɪsᴛᴀɴᴛ:\n🆔 **ɪᴅ:** <code>{ast_id}</code>\n👤 **ɴᴀᴍᴇ:** {ast_name}")
+        except Exception:
+            # Agar member nahi mila, toh invite link generate karke join karwayo
+            try:
+                invitelink = await client.export_chat_invite_link(chat_id)
+                await assistant.join_chat(invitelink)
+            except Exception as e:
+                return await msg.reply(f"❌ **ᴀssɪsᴛᴀɴᴛ ᴊᴏɪɴ ғᴀɪʟᴇᴅ!**\nᴍᴀᴋᴇ sᴜʀᴇ ɪ ʜᴀᴠᴇ 'ɪɴᴠɪᴛᴇ ᴜsᴇʀs' ᴘᴇʀᴍɪssɪᴏɴ.\n\nError: `{e}`")
+
     except Exception as e:
-        return await msg.reply(f"❌ Error: {e}")
+        return await msg.reply(f"❌ **ᴇʀʀᴏʀ:** {e}")
 
     # 2. Search
     if len(msg.command) < 2:
@@ -148,19 +146,14 @@ async def play_cmd(client, msg: Message):
     )
     
     buttons = InlineKeyboardMarkup([
+        [InlineKeyboardButton(text=btn_prog, callback_data="prog_update")],
         [
-            # Row 1: Progress Bar Button (10 blocks)
-            InlineKeyboardButton(text=btn_prog, callback_data="prog_update")
-        ],
-        [
-            # Row 2: 4 Buttons (Isse buttons baraber 'Small' dikhenge)
             InlineKeyboardButton("▷", callback_data="resume_cb"),
             InlineKeyboardButton("Ⅱ", callback_data="pause_cb"),
             InlineKeyboardButton("⏭", callback_data="skip_cb"),
             InlineKeyboardButton("▢", callback_data="stop_cb")
         ],
         [
-            # Row 3: 3 Buttons
             InlineKeyboardButton("⏮ -20s", callback_data="seek_back"),
             InlineKeyboardButton("↺", callback_data="replay_cb"),
             InlineKeyboardButton("+20s ⏭", callback_data="seek_forward")
