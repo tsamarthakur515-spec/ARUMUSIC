@@ -1,15 +1,14 @@
-from ARUMUZIC.clients import bot, assistant, call
+import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from ARUMUZIC.clients import bot, assistant, call
+import config
 
-# IMPORTANT: Inhe mangwana padega varna error aayega
-from main import call  
-import config 
-# Agar play_next doosri file mein hai toh use import karein:
-# from ARUMUZIC.plugins.play import play_next 
+# --- IMPORTANT: play_next ko yahan import karna zaroori hai skip ke liye ---
+from ARUMUZIC.plugins.play import play_next 
 
-@Client.on_callback_query() # 👈 Yahan @bot ki jagah @Client hoga
-async def cb_handler(client, query: CallbackQuery): # 👈 '_' ki jagah 'client' likho
+@Client.on_callback_query()
+async def cb_handler(client: Client, query: CallbackQuery):
     chat_id = query.message.chat.id
     data = query.data
 
@@ -35,7 +34,6 @@ async def cb_handler(client, query: CallbackQuery): # 👈 '_' ki jagah 'client'
         )
 
     elif data == "back_to_start":
-        # bot_me nikalne ka sahi tareeka plugin mein:
         bot_me = await client.get_me() 
         text = (
             "<b>╔══════════════════╗</b>\n"
@@ -46,7 +44,7 @@ async def cb_handler(client, query: CallbackQuery): # 👈 '_' ki jagah 'client'
         )
         buttons = InlineKeyboardMarkup([
             [InlineKeyboardButton("❓ ʜᴇʟᴘ", callback_data="help_menu"), InlineKeyboardButton("📂 ʀᴇᴘᴏ", callback_data="repo_menu")],
-            [InlineKeyboardButton("👤 ᴏᴡɴᴇʀ", url="https://t.me/sxyaru"), InlineKeyboardButton("📢 sᴜᴘᴘᴏʀᴛ", url="https://t.me/your_channel")],
+            [InlineKeyboardButton("👤 ᴏᴡɴᴇʀ", url="https://t.me/sxyaru"), InlineKeyboardButton("📢 sᴜᴘᴘᴏʀᴛ", url="https://t.me/sxyaru")],
             [InlineKeyboardButton("➕ ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ", url=f"https://t.me/{bot_me.username}?startgroup=true")]
         ])
         await query.message.edit_caption(caption=text, reply_markup=buttons)
@@ -68,25 +66,43 @@ async def cb_handler(client, query: CallbackQuery): # 👈 '_' ki jagah 'client'
 
     elif data == "skip_cb":
         try:
-            if chat_id in config.queues: # 👈 config.queues use karein
+            if chat_id in config.queues and len(config.queues[chat_id]) > 0:
+                # Current gana hatao
                 config.queues[chat_id].pop(0)
-            # await play_next(chat_id) # Iske liye play_next import hona chahiye upar
-            await query.answer("Skipped ⏭")
-        except:
-            await query.answer("Nothing to skip!", show_alert=True)
+                # Agla gana play karo
+                await play_next(chat_id)
+                await query.answer("Skipped ⏭")
+                await query.message.delete() # Purana menu delete
+            else:
+                await query.answer("Queue is empty!", show_alert=True)
+        except Exception as e:
+            await query.answer(f"Error: {e}", show_alert=True)
 
     elif data == "stop_cb":
         try:
             await call.leave_group_call(chat_id)
-            config.queues.pop(chat_id, None)
+            if chat_id in config.queues:
+                config.queues.pop(chat_id)
             await query.message.delete()
             await query.answer("Stopped & Left VC ⏹")
         except:
             await query.answer("Assistant not in VC!", show_alert=True)
 
-    # --- Seek Logic ---
+    # --- Seek Logic (Bonus for Background) ---
     elif data == "seek_forward":
-        await query.answer("Seeking +20s... ⏭")
+        try:
+            await call.seek_stream(chat_id, 20) # 20s forward
+            await query.answer("Seeking +20s... ⏭")
+        except:
+            await query.answer("Seek failed!", show_alert=True)
 
     elif data == "seek_back":
-        await query.answer("Seeking -20s... ⏮")
+        try:
+            # Note: Negative value seek back ke liye hoti hai
+            await call.seek_stream(chat_id, -20) 
+            await query.answer("Seeking -20s... ⏮")
+        except:
+            await query.answer("Seek failed!", show_alert=True)
+            
+    elif data == "prog_update":
+        await query.answer("Updating progress...", show_alert=False)
