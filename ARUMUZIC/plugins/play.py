@@ -50,6 +50,9 @@ async def play_next(chat_id: int):
             f"<blockquote><b>❍ ɴᴇxᴛ sᴏɴɢ sᴛʀᴇᴀᴍ sᴛᴀʀᴛᴇᴅ |</b>\n\n"
             f"<b>‣ Tɪᴛʟᴇ :</b> <a href='{stream_url}'>{title}</a>\n"
             f"<b>‣ Rᴇǫᴜᴇsᴛᴇᴅ ʙʏ :</b> `{user_name}`</blockquote>"
+            f"<b>‣ ʙᴏᴛ ʙᴀsᴇᴅ ᴏɴ : ᴀʀᴜ x ᴊɪᴏsᴀᴠᴀɴ</b>\n"
+            f"<b>‣ ᴀᴘɪ ʙʏ: <a href='https://t.me/sxyaru'>ᴀʀᴜ × ᴀᴘɪ [ʙᴏᴛs]</a></b>\n"
+            f"<b>‣ ᴀᴘɪ ᴍᴀᴅᴇ ʙʏ: <a herf='href=https://t.me/ll_PANDA_BBY_ll'>ᴘᴀɴᴅᴀ-ʙᴀʙʏ</a></b>"
         )
         buttons = InlineKeyboardMarkup([
             [InlineKeyboardButton(text=gen_btn_progressbar(duration, 0), callback_data="prog_update")],
@@ -152,7 +155,40 @@ async def play_cmd(client, msg: Message):
             [InlineKeyboardButton("ᴏᴡɴᴇʀ", url="https://t.me/ll_PANDA_BBY_ll"), InlineKeyboardButton("sᴜᴘᴘᴏʀᴛ", url="https://t.me/sxyaru")]
         ])
         pmp = await bot.send_photo(chat_id, photo="https://files.catbox.moe/cu442f.jpg", 
-            caption=f"<blockquote><b>❍ Sᴛᴀʀᴛᴇᴅ Sᴛʀᴇᴀᴍɪɴɢ |</b>\n\n<b>‣ Tɪᴛʟᴇ :</b> {title}\n<b>‣ Rᴇǫᴜᴇsᴛᴇᴅ ʙʏ :</b> `{user_name}`</blockquote>", 
+                try:
+        await call.join_group_call(chat_id, AudioPiped(stream_url, HighQualityAudio()))
+        
+        buttons = InlineKeyboardMarkup([
+            [InlineKeyboardButton(text=gen_btn_progressbar(duration, 0), callback_data="prog_update")],
+            [InlineKeyboardButton("▷", "resume_cb"), InlineKeyboardButton("Ⅱ", "pause_cb"), InlineKeyboardButton("⏭", "skip_cb"), InlineKeyboardButton("▢", "stop_cb")],
+            [InlineKeyboardButton("ᴏᴡɴᴇʀ", url="https://t.me/ll_PANDA_BBY_ll"), InlineKeyboardButton("sᴜᴘᴘᴏʀᴛ", url="https://t.me/sxyaru")]
+        ])
+
+        caption_text = (
+            f"<b>❍ Sᴛᴀʀᴛᴇᴅ Sᴛʀᴇᴀᴍɪɴɢ |</b>\n\n"
+            f"<b>‣ Tɪᴛʟᴇ :</b> <a href='{stream_url}'>{title}</a>\n"
+            f"<b>‣ Dᴜʀᴀᴛɪᴏɴ :</b> <code>{fmt_time(duration)}</code>\n"
+            f"<b>‣ Rᴇǫᴜᴇsᴛᴇᴅ ʙʏ :</b> `{user_name}`\n"
+            f"<b>‣ ʙᴏᴛ ʙᴀsᴇᴅ ᴏɴ : ᴀʀᴜ x ᴊɪᴏsᴀᴠᴀɴ</b>\n"
+            f"<b>‣ ᴀᴘɪ ʙʏ: <a href='https://t.me/sxyaru'>ᴀʀᴜ × ᴀᴘɪ [ʙᴏᴛs]</a></b>\n"
+            f"<b>‣ ᴀᴘɪ ᴍᴀᴅᴇ ʙʏ: <a href='https://t.me/ll_PANDA_BBY_ll'>ᴘᴀɴᴅᴀ-ʙᴀʙʏ</a></b>"
+        )
+
+        pmp = await bot.send_photo(
+            chat_id, 
+            photo="https://files.catbox.moe/cu442f.jpg", 
+            caption=caption_text, 
+            reply_markup=buttons
+        )
+        
+        asyncio.create_task(update_timer(chat_id, pmp.id, duration))
+
+    except Exception as e:
+        if "No active group call" in str(e):
+            return await bot.send_message(chat_id, "❌ **Pehle Voice Chat start karo bhaya!**")
+        config.queues[chat_id] = []
+        await bot.send_message(chat_id, f"❌ **Error:** {e}")
+
             reply_markup=buttons)
         asyncio.create_task(update_timer(chat_id, pmp.id, duration))
     except Exception as e:
