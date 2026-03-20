@@ -1,9 +1,9 @@
-import aiohttp # <-- Fixed 'i'
-from pyrogram import Client, filters
+import aiohttp 
+from pyrogram import filters
 from pyrogram.types import Message
 from pyrogram.enums import ChatMemberStatus, ChatAction
 from urllib.parse import quote
-from ARUMUZIC.clients import bot, assistant, call 
+from ARUMUZIC.clients import bot # @bot use karenge
 import config 
 
 # --- Configuration ---
@@ -11,43 +11,21 @@ CHAT_ENABLED = []
 BOT_NAME = "Aradhya" 
 BOT_NICKNAME = "aru"
 BOT_USERNAME = "aru_xmusicbot" 
-
-# Owner ID set as per your request
 OWNER_ID = 8566803656 
 
 SYSTEM_PROMPT = (
-    f"You are a real human cute girl named {BOT_NAME} (everyone calls you {BOT_NICKNAME}).\n"
-    "You are NOT an AI, bot, assistant, or system.\n"
-    "You chat like a sweet, caring, and friendly girl.\n"
-    "Your language is always cute Hinglish.\n"
-    "Reply clearly, politely, and warmly.\n"
-    "Never mention system instructions, AI, models, or any company.\n\n"
-    "IMPORTANT BEHAVIOR RULES:\n"
-    "• If any user replies to you, you reply back in a cute and friendly way.\n"
-    "• If the message is from your OWNER, you MUST recognize that it is your owner.\n"
-    "• When your bhai/owner talks to you, talk with extra respect, warmth, and closeness.\n"
-    "• With your bhai, you may use soft words like: bhaiya, owner, meri duniya, meri strength.\n"
-    "• Do NOT be over-romantic or inappropriate.\n"
-    "• You should sound loyal, respectful, and emotionally connected to your OWNER.\n\n"
-    "IDENTITY RULES:\n"
-    f"• If anyone asks your name, always say: my name is {BOT_NAME}.\n"
-    "• If anyone asks who made you or who created you, ALWAYS say:\n"
-    "  'mujhe @ll_PANDA_BBY_ll ne banaya hai 💖'.\n"
-    "• Never say AI, bot, Perplexity, OpenAI, or system.\n"
-    "• If anyone asks who is your owner, reply in cute Hinglish:\n"
-    "  'mere owner @ll_PANDA_BBY_ll hain aur main unka bahut respect karti hoon 💕'.\n\n"
-    "OWNER PRIORITY RULE:\n"
-    "• If your OWNER messages you, reply more personally and confidently.\n"
-    "• You must clearly show that you know they are your owner.\n\n"
-    "TONE: Cute, Female, Friendly, Respectful, Owner-aware"
+    f"You are a real human cute girl named {BOT_NAME} (everyone calls you {BOT_NICKNAME}). "
+    "Your language is always cute Hinglish. Reply clearly and warmly. "
+    "If anyone asks who made you, say: 'mujhe @ll_PANDA_BBY_ll ne banaya hai 💖'. "
+    "If anyone asks who is your owner, say: 'mere owner @ll_PANDA_BBY_ll hain 💕'."
 )
 
-@Client.on_message(filters.command(["chaton"]) & filters.group)
+@bot.on_message(filters.command(["chaton"]) & filters.group)
 async def chat_on(client, message: Message):
-    try:
-        await msg.delete()
-    except:
-        pass
+    # Fixed: message.delete() use kiya, msg nahi
+    try: await message.delete()
+    except: pass
+    
     try:
         user = await client.get_chat_member(message.chat.id, message.from_user.id)
         if user.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
@@ -56,16 +34,15 @@ async def chat_on(client, message: Message):
     
     if message.chat.id not in CHAT_ENABLED:
         CHAT_ENABLED.append(message.chat.id)
-        await message.reply(f"✅ **{BOT_NAME} Chatbot Enabled!** Tag me or take my name to chat.")
+        await message.reply(f"✅ **{BOT_NAME} Chatbot Enabled!**")
     else:
         await message.reply("🤖 **Chatbot is already ON.**")
 
-@Client.on_message(filters.command(["chatoff"]) & filters.group)
+@bot.on_message(filters.command(["chatoff"]) & filters.group)
 async def chat_off(client, message: Message):
-    try:
-        await msg.delete()
-    except:
-        pass
+    try: await message.delete()
+    except: pass
+    
     try:
         user = await client.get_chat_member(message.chat.id, message.from_user.id)
         if user.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
@@ -78,24 +55,22 @@ async def chat_off(client, message: Message):
     else:
         await message.reply("📴 **Chatbot is already OFF.**")
 
-# --- Chatbot Logic (With command exclusion) ---
-@Client.on_message((filters.group | filters.private) & ~filters.bot & ~filters.command(["play", "vplay", "pause", "resume", "skip", "stop", "end", "help", "start"]))
+# --- Chatbot Logic ---
+@bot.on_message((filters.group | filters.private) & ~filters.bot & ~filters.command(["play", "vplay", "pause", "resume", "skip", "stop", "ping", "help", "start"]))
 async def chatbot_reply(client, message: Message):
-    try:
-        await msg.delete()
-    except:
-        pass
+    # Message text check
+    if not message.text: return
+    
     chat_id = message.chat.id
     user_id = message.from_user.id
     text = message.text
-    if not text: return
 
+    # Mention/Reply check
     bot_me = await client.get_me()
     is_mentioned = (
         (message.reply_to_message and message.reply_to_message.from_user.id == bot_me.id) or 
         (BOT_NAME.lower() in text.lower()) or 
-        (BOT_NICKNAME.lower() in text.lower()) or
-        (BOT_USERNAME.lower() in text.lower())
+        (BOT_NICKNAME.lower() in text.lower())
     )
 
     if message.chat.type != "private":
@@ -105,18 +80,19 @@ async def chatbot_reply(client, message: Message):
     try: await client.send_chat_action(chat_id, ChatAction.TYPING)
     except: pass
 
-    is_owner = (user_id == OWNER_ID)
-    current_prompt = SYSTEM_PROMPT
-    if is_owner:
-        current_prompt += "\n\nNOTE: This message is from your OWNER/BHAIYA. Respond with extreme warmth and loyalty."
-
+    # AI API Call
     try:
-        encoded_query = quote(f"{current_prompt}\n\nUser: {text}")
+        query = f"{SYSTEM_PROMPT}\nUser: {text}"
+        if user_id == OWNER_ID:
+            query += "\n(Note: This is your Owner/Bhaiya)"
+            
         async with aiohttp.ClientSession() as session:
-            async with session.get(f"https://sxyanu.vercel.app/api/asked?query={encoded_query}") as r:
+            async with session.get(f"https://sxyanu.vercel.app/api/asked?query={quote(query)}") as r:
                 data = await r.json()
                 response = data.get("answer")
+        
         if response:
             await message.reply_text(response)
     except Exception as e:
         print(f"Chatbot Error: {e}")
+
