@@ -45,6 +45,10 @@ SYSTEM_PROMPT = (
 @Client.on_message(filters.command(["chaton"]) & filters.group)
 async def chat_on(client, message: Message):
     try:
+        await msg.delete()
+    except:
+        pass
+    try:
         user = await client.get_chat_member(message.chat.id, message.from_user.id)
         if user.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
             return await message.reply("❌ **Only Admins can enable Chatbot!**")
@@ -58,6 +62,10 @@ async def chat_on(client, message: Message):
 
 @Client.on_message(filters.command(["chatoff"]) & filters.group)
 async def chat_off(client, message: Message):
+    try:
+        await msg.delete()
+    except:
+        pass
     try:
         user = await client.get_chat_member(message.chat.id, message.from_user.id)
         if user.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
@@ -73,6 +81,10 @@ async def chat_off(client, message: Message):
 # --- Chatbot Logic (With command exclusion) ---
 @Client.on_message((filters.group | filters.private) & ~filters.bot & ~filters.command(["play", "vplay", "pause", "resume", "skip", "stop", "end", "help", "start"]))
 async def chatbot_reply(client, message: Message):
+    try:
+        await msg.delete()
+    except:
+        pass
     chat_id = message.chat.id
     user_id = message.from_user.id
     text = message.text
