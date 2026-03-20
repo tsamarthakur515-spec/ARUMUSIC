@@ -3,11 +3,11 @@ import psutil
 from datetime import datetime
 from pyrogram import filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-from ARUMUZIC.clients import bot # Hum is 'bot' ka use karenge
+from ARUMUZIC.clients import bot 
 import config
 
-# Startup fallback
-BOT_START_TIME = datetime.now()
+# Variable name sahi kar diya
+START_TIME = datetime.now()
 
 def get_readable_time(seconds: int) -> str:
     count = 0
@@ -32,23 +32,19 @@ def get_readable_time(seconds: int) -> str:
     ping_time += ":".join(time_list)
     return ping_time
 
-# Yahan @Client ki jagah @bot use karo
 @bot.on_message(filters.command("ping") & ~filters.bot)
 async def ping_cmd(client, msg: Message):
-    # Command delete logic
     try:
         await msg.delete()
     except:
         pass
 
     start_time = time.time()
-    
-    # Message reply
     m = await msg.reply_text("<code>ᴘɪɴɢɪɴɢ..</code>")
     
     latency = round((time.time() - start_time) * 1000, 2)
     
-    # Uptime fix
+    # Uptime logic fixed (Using START_TIME)
     bot_uptime = getattr(config, "BOT_START_TIME", START_TIME)
     uptime_sec = (datetime.now() - bot_uptime).total_seconds()
     uptime = get_readable_time(int(uptime_sec))
@@ -86,6 +82,6 @@ async def ping_cmd(client, msg: Message):
             reply_markup=buttons
         )
         await m.delete()
-    except:
-        # Fallback agar photo na jaye
+    except Exception as e:
+        print(f"Ping Photo Error: {e}")
         await m.edit(text, reply_markup=buttons)
