@@ -2,7 +2,7 @@ import aiohttp
 from pyrogram import Client, filters
 from pyrogram.types import Message
 from pyrogram.enums import ChatMemberStatus, ChatAction
-from urllib.parse import quote # Iski wajah se error aa raha tha
+from urllib.parse import quote
 import config 
 
 # --- Configuration ---
@@ -50,7 +50,7 @@ async def chatbot_reply(client, message: Message):
     if not text:
         return
 
-    # Trigger Logic (Check if mentioned or replied to)
+    # Trigger Logic
     bot_me = await client.get_me()
     is_mentioned = (
         (message.reply_to_message and message.reply_to_message.from_user.id == bot_me.id) or 
@@ -58,7 +58,6 @@ async def chatbot_reply(client, message: Message):
         (BOT_USERNAME.lower() in text.lower())
     )
 
-    # Group mein tabhi jab ON ho aur Mentioned ho
     if message.chat.type != "private":
         if chat_id not in CHAT_ENABLED or not is_mentioned:
             return
@@ -72,14 +71,17 @@ async def chatbot_reply(client, message: Message):
     prompt = OWNER_PROMPT if is_owner else USER_PROMPT
 
     try:
-        # User query ko safely encode kar rahe hain
-        encoded_query = quote(f"{prompt}\n\nUser: {text}")
+        # User query and prompt combined
+        full_text = f"{prompt}\n\nUser: {text}"
+        encoded_query = quote(full_text)
         
         async with aiohttp.ClientSession() as session:
             async with session.get(f"https://sxyanu.vercel.app/api/asked?query={encoded_query}") as r:
                 data = await r.json()
-                # Try multiple keys because some APIs change them
-                response = data.get("response") or data.get("reply") or data.get("message")
+                
+                # --- API DATA EXTRACTION ---
+                # Aapki API "answer" key mein reply bhejti hai
+                response = data.get("answer")
 
         if response:
             await message.reply_text(response)
