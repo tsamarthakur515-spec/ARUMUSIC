@@ -10,7 +10,7 @@ import config
 CHAT_ENABLED = [] 
 BOT_NAME = "Aradhya" 
 BOT_NICKNAME = "aru"
-BOT_USERNAME = "ARU_xOPUSERBOT" 
+BOT_USERNAME = "aru_xmusicbot" 
 
 # Safe Owner ID check
 OWNER_ID = 8566803656 
