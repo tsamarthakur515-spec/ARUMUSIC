@@ -77,6 +77,7 @@ async def play_next(chat_id: int):
     f"<b>‣ ᴀᴘɪ ʙʏ : <a href='https://t.me/sxyaru'>ᴀʀᴜ × ᴀᴘɪ [ʙᴏᴛs]</a></b>\n"
     f"<b>‣ ᴀᴘɪ ᴍᴀᴅᴇ ʙʏ : <a href='https://t.me/ll_PANDA_BBY_ll'>ᴘᴀɴᴅᴀ-ʙᴀʙʏ</a></b>"
     f"</blockquote>"
+        )
         btn_prog = gen_btn_progressbar(duration, 0)
         buttons = InlineKeyboardMarkup([
             [InlineKeyboardButton(text=btn_prog, callback_data="prog_update")],
