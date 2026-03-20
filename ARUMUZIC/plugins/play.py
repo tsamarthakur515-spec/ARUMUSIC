@@ -94,6 +94,10 @@ async def update_timer(chat_id, message_id, duration):
 
 @Client.on_message(filters.command("play") & filters.group)
 async def play_cmd(client, msg: Message):
+    try:
+        await msg.delete()
+    except:
+        pass
     chat_id = msg.chat.id
     user_name = msg.from_user.first_name if msg.from_user else "User"
 
