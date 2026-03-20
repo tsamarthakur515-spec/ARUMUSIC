@@ -3,10 +3,10 @@ import psutil
 from datetime import datetime
 from pyrogram import filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-from ARUMUZIC.clients import bot # Hum is 'bot' ka use karenge
+from ARUMUZIC.clients import bot 
 import config
 
-# Global startup time
+# Global startup time fallback
 START_TIME = datetime.now()
 
 def get_readable_time(seconds: int) -> str:
@@ -32,25 +32,26 @@ def get_readable_time(seconds: int) -> str:
     ping_time += ":".join(time_list)
     return ping_time
 
-# DHYAN DO: Yahan @bot.on_message hona chahiye
 @bot.on_message(filters.command("ping") & ~filters.bot)
 async def ping_cmd(client, message: Message):
-    try: await msg.delete()
-    except: pass
+    # Fixed: Aapka /ping command delete karega
+    try: 
+        await message.delete()
+    except: 
+        pass
+
     start_time = time.time()
     
-    # Reply text
+    # 1st Step: Pinging message bhejega
     m = await message.reply_text("<code>ᴘɪɴɢɪɴɢ..</code>")
     
-    # Latency calculation
+    # Calculation logic
     end_time = time.time()
     ping_ms = round((end_time - start_time) * 1000, 2)
     
-    # Uptime fix
     bot_uptime = getattr(config, "BOT_START_TIME", START_TIME)
     uptime = get_readable_time(int((datetime.now() - bot_uptime).total_seconds()))
     
-    # Stats
     cpu = psutil.cpu_percent()
     ram = psutil.virtual_memory().percent
 
@@ -71,13 +72,16 @@ async def ping_cmd(client, message: Message):
     ]])
 
     try:
+        # 2nd Step: Photo bhejega
         await client.send_photo(
             message.chat.id,
             photo="https://files.catbox.moe/nacfzm.jpg",
             caption=text,
             reply_markup=buttons
         )
+        # 3rd Step: "Pinging..." wala text delete kar dega
         await m.delete()
     except Exception as e:
         print(f"Ping Photo Error: {e}")
+        # Photo fail hui toh text ko hi update kar dega
         await m.edit(text, reply_markup=buttons)
