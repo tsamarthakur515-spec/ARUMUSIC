@@ -8,12 +8,12 @@ import config
 
 # --- Configuration ---
 CHAT_ENABLED = [] 
-BOT_NAME = "ᴀʀᴀᴅʜʏᴀ" 
-BOT_NICKNAME = "ᴀʀᴜ"
-BOT_USERNAME = "sxyaru" 
+BOT_NAME = "Aradhya" 
+BOT_NICKNAME = "aru"
+BOT_USERNAME = "ARU_xOPUSERBOT" 
 
 # Safe Owner ID check
-OWNER_ID = getattr(config, "OWNER_ID", 0) 
+OWNER_ID = 8566803656 
 
 # --- Your Custom FEMALE SYSTEM PROMPT ---
 SYSTEM_PROMPT = (
