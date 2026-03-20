@@ -108,33 +108,42 @@ async def play_cmd(client, msg: Message):
     query = msg.text.split(None, 1)[1].strip()
     m = await msg.reply("<blockquote>🔎 <b>sᴇᴀʀᴄʜɪɴɢ...</b></blockquote>")
 
-    # --- ADVANCED ASSISTANT JOIN/UNBAN LOGIC ---
+    # --- FIXED ADVANCED ASSISTANT JOIN/UNBAN LOGIC ---
     try:
         assistant_id = (await assistant.get_me()).id
         try:
-            # Check agar assistant group mein hai
             get_ast = await client.get_chat_member(chat_id, assistant_id)
+            # Agar assistant banned hai toh unban karo
             if get_ast.status == ChatMemberStatus.BANNED:
-                # Agar Banned hai toh Unban karo
                 await client.unban_chat_member(chat_id, assistant_id)
-                await m.edit("✅ **Assistant unbanned! Joining now...**")
-        except:
-            # Agar assistant group mein nahi hai
+                await m.edit("✅ **Assistant unbanned! Joining...**")
+                # Unban ke baad join zaroori hai
+                invitelink = await client.export_chat_invite_link(chat_id)
+                await assistant.join_chat(invitelink)
+            
+            # AGAR ASSISTANT PEHLE SE HAI (Member/Admin), TOH KUCH NAHI KARNA
+            pass 
+
+        except Exception:
+            # Agar assistant group mein nahi hai (ChatMemberNotFound)
             await m.edit("☎️ **Assistant joining group...**")
             try:
-                # Private group ke liye invite link
+                # 1. Sabse pehle Invite Link se try karo (Private groups ke liye best hai)
                 invitelink = await client.export_chat_invite_link(chat_id)
                 await assistant.join_chat(invitelink)
             except:
-                # Public group ke liye username se join
+                # 2. Agar Link fail ho toh Username se try karo (Public groups)
                 if msg.chat.username:
                     await assistant.join_chat(msg.chat.username)
                 else:
-                    return await m.edit("❌ **Mujhe Admin banao aur 'Invite Users' permission do taaki assistant join ho sake!**")
-    except Exception as e:
-        return await m.edit(f"❌ **Assistant Join Error:** `{e}`")
+                    # 3. Agar dono fail ho tabhi ye message dikhao
+                    return await m.edit("❌ **Mujhe 'Invite Users' permission chahiye assistant ko laane ke liye!**")
 
-    # --- API Search ---
+    except Exception as e:
+        # Isko sirf console mein print karo, user ko baar-baar disturb mat karo
+        print(f"Assistant Check Error: {e}")
+
+    # --- API Search (Ab ye makkhan chalega) ---
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(f"https://jio-saa-van.vercel.app/result/?query={quote(query)}", timeout=15) as r:
@@ -143,6 +152,9 @@ async def play_cmd(client, msg: Message):
         return await m.edit(f"❌ **sᴇᴀʀᴄʜ ᴇʀʀᴏʀ:** `{e}`")
 
     if not data: return await m.edit("❌ **ɴᴏ ʀᴇsᴜʟᴛs ғᴏᴜɴᴅ!**")
+    
+    # ... baaki ka song_data aur queue logic ...
+
     
     # ... (Baaki ka Queue aur Play logic same rahega jo pehle diya tha) ...
 
