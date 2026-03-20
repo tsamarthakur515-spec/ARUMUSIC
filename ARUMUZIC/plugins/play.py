@@ -2,6 +2,7 @@ import asyncio
 import aiohttp
 import time
 from urllib.parse import quote
+from pyrogram.enums import ChatMemberStatus # Ye import zaroor check kar lena top pe
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from pytgcalls.types import AudioPiped, HighQualityAudio
@@ -95,6 +96,8 @@ async def update_timer(chat_id, message_id, duration):
             )
         except: break
 
+from pyrogram.enums import ChatMemberStatus # Ye import zaroor check kar lena top pe
+
 @Client.on_message(filters.command("play") & filters.group)
 async def play_cmd(client, msg: Message):
     try:
@@ -108,42 +111,36 @@ async def play_cmd(client, msg: Message):
     query = msg.text.split(None, 1)[1].strip()
     m = await msg.reply("<blockquote>🔎 <b>sᴇᴀʀᴄʜɪɴɢ...</b></blockquote>")
 
-    # --- FIXED ADVANCED ASSISTANT JOIN/UNBAN LOGIC ---
+    # --- 100% WORKING ASSISTANT CHECK ---
+    assistant_id = (await assistant.get_me()).id
     try:
-        assistant_id = (await assistant.get_me()).id
-        try:
-            get_ast = await client.get_chat_member(chat_id, assistant_id)
-            # Agar assistant banned hai toh unban karo
-            if get_ast.status == ChatMemberStatus.BANNED:
-                await client.unban_chat_member(chat_id, assistant_id)
-                await m.edit("✅ **Assistant unbanned! Joining...**")
-                # Unban ke baad join zaroori hai
-                invitelink = await client.export_chat_invite_link(chat_id)
-                await assistant.join_chat(invitelink)
+        # Check if assistant is in chat
+        get_ast = await client.get_chat_member(chat_id, assistant_id)
+        
+        # Agar assistant BANNED hai toh unban karke join karwao
+        if get_ast.status == ChatMemberStatus.BANNED:
+            await client.unban_chat_member(chat_id, assistant_id)
+            invitelink = await client.export_chat_invite_link(chat_id)
+            await assistant.join_chat(invitelink)
             
-            # AGAR ASSISTANT PEHLE SE HAI (Member/Admin), TOH KUCH NAHI KARNA
-            pass 
-
+    except Exception:
+        # Agar get_chat_member fail hua (Matlab assistant group mein nahi hai)
+        await m.edit("☎️ **Assistant joining group...**")
+        try:
+            # Pehle invite link se try karo
+            invitelink = await client.export_chat_invite_link(chat_id)
+            await assistant.join_chat(invitelink)
         except Exception:
-            # Agar assistant group mein nahi hai (ChatMemberNotFound)
-            await m.edit("☎️ **Assistant joining group...**")
-            try:
-                # 1. Sabse pehle Invite Link se try karo (Private groups ke liye best hai)
-                invitelink = await client.export_chat_invite_link(chat_id)
-                await assistant.join_chat(invitelink)
-            except:
-                # 2. Agar Link fail ho toh Username se try karo (Public groups)
-                if msg.chat.username:
+            # Agar link export fail ho (Bot admin nahi hai ya permission nahi hai)
+            if msg.chat.username:
+                try:
                     await assistant.join_chat(msg.chat.username)
-                else:
-                    # 3. Agar dono fail ho tabhi ye message dikhao
-                    return await m.edit("❌ **Mujhe 'Invite Users' permission chahiye assistant ko laane ke liye!**")
+                except:
+                    return await m.edit("❌ **Mujhe 'Invite Users' permission do taaki assistant join ho sake!**")
+            else:
+                return await m.edit("❌ **Mujhe 'Invite Users' permission do taaki assistant join ho sake!**")
 
-    except Exception as e:
-        # Isko sirf console mein print karo, user ko baar-baar disturb mat karo
-        print(f"Assistant Check Error: {e}")
-
-    # --- API Search (Ab ye makkhan chalega) ---
+    # --- API Search (Ab ye queue ke liye aage badhega) ---
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(f"https://jio-saa-van.vercel.app/result/?query={quote(query)}", timeout=15) as r:
@@ -152,13 +149,8 @@ async def play_cmd(client, msg: Message):
         return await m.edit(f"❌ **sᴇᴀʀᴄʜ ᴇʀʀᴏʀ:** `{e}`")
 
     if not data: return await m.edit("❌ **ɴᴏ ʀᴇsᴜʟᴛs ғᴏᴜɴᴅ!**")
-    
-    # ... baaki ka song_data aur queue logic ...
 
-    
-    # ... (Baaki ka Queue aur Play logic same rahega jo pehle diya tha) ...
 
-    
     track = data[0]
     title, duration = track.get("song"), int(track.get("duration", 0))
     stream_url = track.get("media_url") or track.get("download_url")
