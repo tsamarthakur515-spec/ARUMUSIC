@@ -4,7 +4,7 @@ from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardBu
 from ARUMUZIC.clients import bot, assistant, call
 import config
 
-# --- IMPORTANT: play_next ko yahan import karna zaroori hai skip ke liye ---
+# Note: Agar circular import error aaye toh is line ko skip_cb ke andar move kar dena
 from ARUMUZIC.plugins.play import play_next 
 
 @Client.on_callback_query()
@@ -36,13 +36,13 @@ async def cb_handler(client: Client, query: CallbackQuery):
     elif data == "back_to_start":
         bot_me = await client.get_me() 
         text = (
-        "<b>╔══════════════════╗</b>\n"
-        "<b>   🎵 ᴍᴜsɪᴄ ᴘʟᴀʏᴇʀ ʙᴏᴛ 🎵   </b>\n"
-        "<b>╚══════════════════╝</b>\n\n"
-        "<b>👋 ʜᴇʟʟᴏ! ɪ ᴀᴍ ᴀ ғᴀsᴛ & ᴘᴏᴡᴇʀғᴜʟ</b>\n"
-        "<b>ᴠᴏɪᴄᴇ ᴄʜᴀᴛ ᴍᴜsɪᴄ ᴘʟᴀʏᴇʀ ʙᴏᴛ.</b>\n\n"
-        "✨ <b>ᴍᴀᴅᴇ ᴡɪᴛʜ ❤️ ʙʏ:</b> <a href='https://t.me/sxyaru'>sxyaru</a>"
-    )
+            "<b>╔══════════════════╗</b>\n"
+            "<b>   🎵 ᴍᴜsɪᴄ ᴘʟᴀʏᴇʀ ʙᴏᴛ 🎵   </b>\n"
+            "<b>╚══════════════════╝</b>\n\n"
+            "<b>👋 ʜᴇʟʟᴏ! ɪ ᴀᴍ ᴀ ғᴀsᴛ & ᴘᴏᴡᴇʀғᴜʟ</b>\n"
+            "<b>ᴠᴏɪᴄᴇ ᴄʜᴀᴛ ᴍᴜsɪᴄ ᴘʟᴀʏᴇʀ ʙᴏᴛ.</b>\n\n"
+            "✨ <b>ᴍᴀᴅᴇ ᴡɪᴛʜ ❤️ ʙʏ:</b> <a href='https://t.me/sxyaru'>sxyaru</a>"
+        )
         buttons = InlineKeyboardMarkup([
             [InlineKeyboardButton("❓ ʜᴇʟᴘ", callback_data="help_menu"), InlineKeyboardButton("📂 ʀᴇᴘᴏ", callback_data="repo_menu")],
             [InlineKeyboardButton("👤 ᴏᴡɴᴇʀ", url="https://t.me/sxyaru"), InlineKeyboardButton("📢 sᴜᴘᴘᴏʀᴛ", url="https://t.me/sxyaru")],
@@ -65,17 +65,22 @@ async def cb_handler(client: Client, query: CallbackQuery):
         except:
             await query.answer("Nothing playing!", show_alert=True)
 
-    elif data == "skip_cb":
+    elif data == "skip_cb": # <-- Yahan Indentation fix kar di
         try:
-            if chat_id in config.queues and len(config.queues[chat_id]) > 0:
-                # Current gana hatao
-                config.queues[chat_id].pop(0)
-                # Agla gana play karo
+            if chat_id in config.queues and len(config.queues[chat_id]) > 1:
                 await play_next(chat_id)
-                await query.answer("Skipped ⏭")
-                await query.message.delete() # Purana menu delete
+                await query.answer("Playing next song... ⏭")
+                try: await query.message.delete()
+                except: pass
             else:
-                await query.answer("Queue is empty!", show_alert=True)
+                try:
+                    await call.leave_group_call(chat_id)
+                    if chat_id in config.queues:
+                        config.queues.pop(chat_id)
+                    await query.message.delete()
+                    await query.answer("Queue empty! Left VC. ⏹", show_alert=True)
+                except:
+                    await query.answer("Nothing to skip!", show_alert=True)
         except Exception as e:
             await query.answer(f"Error: {e}", show_alert=True)
 
@@ -89,17 +94,15 @@ async def cb_handler(client: Client, query: CallbackQuery):
         except:
             await query.answer("Assistant not in VC!", show_alert=True)
 
-    # --- Seek Logic (Bonus for Background) ---
     elif data == "seek_forward":
         try:
-            await call.seek_stream(chat_id, 20) # 20s forward
+            await call.seek_stream(chat_id, 20)
             await query.answer("Seeking +20s... ⏭")
         except:
             await query.answer("Seek failed!", show_alert=True)
 
     elif data == "seek_back":
         try:
-            # Note: Negative value seek back ke liye hoti hai
             await call.seek_stream(chat_id, -20) 
             await query.answer("Seeking -20s... ⏮")
         except:
