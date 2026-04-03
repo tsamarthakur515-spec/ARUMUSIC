@@ -28,7 +28,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
 
     elif data == "repo_menu":
         repo_text = (
-            "<b> ʀᴇᴘᴏ ᴋʏᴀ ʟᴇɢᴀ ᴍᴀᴅᴀʀᴄʜᴏᴅ\nᴘᴀɴᴅᴀ ᴋᴀ ʟᴀɴᴅ ʟᴇʟᴇ ʙᴏʟ ʟᴇɢᴀ 😂🖕??</b>"
+            "<b> ʀᴇᴘᴏ ᴋʏᴀ ʟᴇɢᴀ ᴍᴀᴅᴀʀᴄʜᴏᴅ\n samar ᴋᴀ ʟᴀɴᴅ ʟᴇʟᴇ ʙᴏʟ ʟᴇɢᴀ 😂🖕??</b>"
         )
         await query.message.edit_caption(
             caption=repo_text,
@@ -47,7 +47,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         )
         buttons = InlineKeyboardMarkup([
             [InlineKeyboardButton("❓ ʜᴇʟᴘ", callback_data="help_menu"), InlineKeyboardButton("📂 ʀᴇᴘᴏ", callback_data="repo_menu")],
-            [InlineKeyboardButton("👤 ᴏᴡɴᴇʀ", url="https://t.me/sxyaru"), InlineKeyboardButton("📢 sᴜᴘᴘᴏʀᴛ", url="https://t.me/sxyaru")],
+            [InlineKeyboardButton("👤 ᴏᴡɴᴇʀ", url="https://t.me/"), InlineKeyboardButton("📢 sᴜᴘᴘᴏʀᴛ", url="https://t.me/")],
             [InlineKeyboardButton("➕ ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ", url=f"https://t.me/{bot_me.username}?startgroup=true")]
         ])
         await query.message.edit_caption(caption=text, reply_markup=buttons)
