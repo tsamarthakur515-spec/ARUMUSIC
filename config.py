@@ -2,12 +2,12 @@ import os
 from datetime import datetime
 
 # --- Bot Credentials ---
-API_ID = 33603336
-API_HASH = "c9683a8ec3b886c18219f650fc8ed429"
-BOT_TOKEN = "8596765113:AAE0P2S5mis_cEVdi2G7Jk9mzamSwI6d74M"
-SESSION_STRING = "BQE-4i0ASxu8TXk4s870tFMn-D2Ijs-7DaTep8qcmRnZuowGYTiKDzzy9fKRT3pCc7aFI9oql0Rp5k1FkymDhRbewYPN11p5G7exMCs-z2bdMPuRoJCF60r7p_xq0TBjtLw5P1f-pXHHRxeXSAq0nKyNglv2pZ-GVCbYL4J-OwIkfck4wZyfiU0H58LZla5Il4VmVww-ewK3roa4mVjIxGKYoFva7LqYEf9Iti77jLz7HW7gCfuNessLDXqH1se4DuOSmoJzbacJxofENDQJChGjP4K7gbkMQQKwjCQfndvTmHLyDnc5jDqwfngZK1ogepmyiXZhhzHVebIieznK4DXTM1Q7pAAAAAHKarFXAA"
+API_ID = 39005479
+API_HASH = "c2e7265b2e96025adcc4731c2c1e5ba5"
+BOT_TOKEN = "8534739129:AAEY1_SiskC73NPMBq3IDU8XfYCbVuZWbsE"
+SESSION_STRING = "BQJTLScAnOFYKCwnyrSjEUcnuqVN7bm85oVmteMpak2s4XL7Hb0yQ04kwaMAMtPZqSUUJaCr97887jGaR8LlEX8zocmr5Mutz7tXGOKUnCDNWxX1KHvkbRczcdMaQHFHFxO1mxCvdOx8abVkTpcV5IyTnlO6GO6IwFiISPYTRF3ekCiZFWhYC0oH3ZzFRMVXtSAMFH8G1rxKwkmn_ooOXNJZdoTNfMzv4_WU_Jusp8ASALGU3WV30Ugn8UEtYm2glTo0V9nuOGv_ZF7zQA-trkQjRnKM17JGTxDFVvk9LZSF03ekSV7cAdje4dJM_XVHwyewU3cRX4zzfpE3CJ3e_jqQG0iKDwAAAAIKSZQTAA"
 # --- Random image links ---" # Apni session string yahan puri daal dena
-OWNER_ID = 8566803656
+OWNER_ID = 7724452546
 # --- Global Tracking ---
 queues = {}
 playing_messages = {} # {chat_id: message_id} - Timer edit karne ke liye
