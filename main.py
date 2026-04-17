@@ -4,18 +4,18 @@ from ARUMUZIC.clients import bot, assistant, call
 import config
 
 async def start_bot():
-    print("🚀 Starting ARUMUZIC Clients...")
+    print("🚀 Starting SuruchiXmusic Clients...")
     
     # --- PLUGINS LOADING LOGIC ---
     # Ye batata hai bot ko ki commands kahan rakhi hain
-    bot.plugins = {"root": "ARUMUZIC/plugins"} 
+    bot.plugins = {"root": "SuruchiXmusic/plugins"} 
     
     await bot.start()
     await assistant.start()
     await call.start()
     
     print("---------------------------------")
-    print("✨ ARUMUSIC IS NOW ONLINE! ✨")
+    print("✨ SURUCHIXMUSIC IS NOW ONLINE! ✨")
     print("✅ ALL MODULES LOADED")
     print("---------------------------------")
     
